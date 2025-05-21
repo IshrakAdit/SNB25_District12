@@ -1,0 +1,31 @@
+meta {
+  name: GetUserInfo
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{host}}/v1/users
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJSUzI1NiIsImtpZCI6IjY3ZDhjZWU0ZTYwYmYwMzYxNmM1ODg4NTJiMjA5MTZkNjRjMzRmYmEiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiU2FkYXR1bCBpc2xhbSBTYWRpIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0lENEktWEJheGJweGFuR09TZmR4MWhKclFRSUM1aERfMjVEYXp4LU1YWHJJT2I5QT1zOTYtYyIsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS90ZXN0LWF1dGgtY2EyOGMiLCJhdWQiOiJ0ZXN0LWF1dGgtY2EyOGMiLCJhdXRoX3RpbWUiOjE3NDc1Nzg5MTksInVzZXJfaWQiOiJZeXRySERaNTYyYzZsdUdHNGpDY3NvYUE0dTMzIiwic3ViIjoiWXl0ckhEWjU2MmM2bHVHRzRqQ2Nzb2FBNHUzMyIsImlhdCI6MTc0NzU3ODkxOSwiZXhwIjoxNzQ3NTgyNTE5LCJlbWFpbCI6InNhZGF0dWxpc2xhbXNhZGlAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZ29vZ2xlLmNvbSI6WyIxMTU3MDcxODIwMjY5NTI3MDIwMDEiXSwiZW1haWwiOlsic2FkYXR1bGlzbGFtc2FkaUBnbWFpbC5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJnb29nbGUuY29tIn19.VpEem6qJDNZpM_pFe3_p_PYTOnZO3prcmuve3d5eGsJEgcEAhPkKASSnc8UTCZhknuwC2O0f40Ul5GU1DITO6-AbLNQDh9YY4xV_vzp23YgJS--zrpjvowSITZXSR4B1T2280qJ_QcTEVYLBST_GIsxiqK3RI7Hkvzr05V4a44MtaM2jwRUcDi4LCug8iQmXwuhMK3ezezZ7qVSiPejv-uEq5M2DNjw7FXGxDE1HDytFQbezQAaOcO3CjbWBVlGpQtDQ_hxeugp_Pi5rctEp9m-MzunQJjQ_iB3YdCvogveg4u_yA1LSB93j3bleI6vK8Q-q1Z7re7w_2urHKToysA
+}
+
+docs {
+  **Desc**: Get User info \
+  **Authorization**: USER \
+  **Response Bodies**:
+  ```
+  status: 200
+  
+  {
+    "id": "string",
+    "fullName": "string",
+    "email": "string",
+    "profilePicture": "string"
+  }
+  ```
+}

@@ -1,0 +1,21 @@
+name: sn_bose
+
+services:
+  db:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=snbose
+      - POSTGRES_PASSWORD=snbose
+      - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "snbose" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - host_network
+networks:
+  host_network:
