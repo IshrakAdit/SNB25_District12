@@ -8,6 +8,7 @@ import {
   //   Alert,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import auth from '@react-native-firebase/auth';
 
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../../constants/types';
@@ -24,11 +25,20 @@ const RegistrationScreen = ({onRegister}: Props) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const register = () => {
+  const register = async () => {
     // if (!email || !password) {
     //   Alert.alert('Error', 'Please fill in all fields.');
     //   return;
     // }
+    try {
+      const response = await auth().createUserWithEmailAndPassword(
+        email,
+        password,
+      );
+      console.log('User account created & signed in: ', response);
+    } catch (error) {
+      console.error(error);
+    }
     onRegister(); // call App's setIsLoggedIn(true)
   };
 
