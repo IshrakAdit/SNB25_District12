@@ -53,7 +53,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-    private String extractFullName(String email) {
+    public String extractFullName(String email) {
         if (email == null || !email.contains("@")) {
             return null; // or throw an IllegalArgumentException
         }

@@ -26,4 +26,9 @@ public class ContentVote {
     @JoinColumn(name = "content_id", nullable = false)
     @ToString.Exclude
     private Content content;
+
+    public ContentVote(User user, Content content) {
+        this.user = user;
+        this.content = content;
+    }
 }

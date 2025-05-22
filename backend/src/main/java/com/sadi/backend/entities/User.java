@@ -51,5 +51,8 @@ public class User {
         this.email = email;
         this.fullName = fullName;
         this.role = role;
+        this.credit = 0L;
+        this.score = 0L;
+        this.createdAt = Instant.now();
     }
 }
