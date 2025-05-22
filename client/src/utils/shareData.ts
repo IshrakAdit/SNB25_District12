@@ -91,6 +91,19 @@ export const exportData = async () => {
       files.map(f => f.name),
     );
 
+    const fileDetails = await Promise.all(
+      files.map(async file => {
+        const content = await RNFS.readFile(file.path, 'utf8'); // or 'base64' for binary
+        return {
+          name: file.name,
+          path: file.path,
+          content: content,
+        };
+      }),
+    );
+
+    console.log('Files with contents:', fileDetails);
+
     // Share the directory contents
     await Share.share({
       title: 'Learning App Data',
