@@ -1,13 +1,14 @@
 package com.sadi.backend.specifications;
 
-import com.sadi.backend.entities.Content;
+import com.sadi.backend.entities.Project;
+import com.sadi.backend.enums.ProjectType;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.Instant;
 
-public class ContentSpecification {
-    public static Specification<Content> withTitle(String title) {
+public class ProjectSpecification {
+    public static Specification<Project> withTitle(String title) {
         return (root, query, cb) -> {
             if (title != null && !title.isEmpty()) {
                 return cb.like(cb.lower(root.get("title")), "%" + title.toLowerCase() + "%");
@@ -16,7 +17,7 @@ public class ContentSpecification {
         };
     }
 
-    public static Specification<Content> withDateBetween(Instant startDate, Instant endDate) {
+    public static Specification<Project> withDateBetween(Instant startDate, Instant endDate) {
         return (root, query, cb) -> {
             if (startDate != null && endDate != null) {
                 return cb.between(root.get("createdAt"), startDate, endDate);
@@ -25,7 +26,8 @@ public class ContentSpecification {
         };
     }
 
-    public static Specification<Content> withAuthorId(String userId) {
+
+    public static Specification<Project> withAuthorId(String userId) {
         return (root, query, cb) -> {
             if (userId != null) {
                 return cb.equal(root.get("user").get("id"), userId);
@@ -34,16 +36,16 @@ public class ContentSpecification {
         };
     }
 
-    public static Specification<Content> withTopicId(String topicId) {
+    public static Specification<Project> withProjectType(ProjectType type) {
         return (root, query, cb) -> {
-            if (topicId != null) {
-                return cb.equal(root.get("topic").get("id"), topicId);
+            if (type != null) {
+                return cb.equal(root.get("type"), type.toString());
             }
             return null;
         };
     }
 
-    public static Specification<Content> withAuthorName(String authorName) {
+    public static Specification<Project> withAuthorName(String authorName) {
         return (root, query, cb) -> {
             if (authorName != null && !authorName.isEmpty()) {
                 return cb.like(cb.lower(root.get("user").get("fullName")), "%" + authorName.toLowerCase() + "%");
@@ -52,22 +54,12 @@ public class ContentSpecification {
         };
     }
 
-    public static Specification<Content> sortByTimestamp(Sort.Direction direction) {
+    public static Specification<Project> sortBy(Sort.Direction direction, Project.SortCategory category) {
         return (root, query, cb) -> {
             assert query != null;
             query.orderBy(direction == Sort.Direction.ASC ?
-                    cb.asc(root.get("createdAt")) :
-                    cb.desc(root.get("createdAt")));
-            return null; // sorting doesn't affect the where clause
-        };
-    }
-
-    public static Specification<Content> sortByVote(Sort.Direction direction) {
-        return (root, query, cb) -> {
-            assert query != null;
-            query.orderBy(direction == Sort.Direction.ASC ?
-                    cb.asc(root.get("upvoteCount")) :
-                    cb.desc(root.get("upvoteCount")));
+                    cb.asc(root.get(category.getValue())) :
+                    cb.desc(root.get(category.getValue())));
             return null; // sorting doesn't affect the where clause
         };
     }
