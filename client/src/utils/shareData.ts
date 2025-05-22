@@ -68,10 +68,18 @@ export const exportData = async () => {
       console.log('Copying cached images...');
       const cachedImages = JSON.parse(imageCache);
       for (const image of cachedImages) {
-        const fileName = image.localUri.split('/').pop();
-        if (fileName && (await RNFS.exists(image.localUri))) {
-          await RNFS.copyFile(image.localUri, `${TEMP_DIR}/${fileName}`);
-          console.log('Copied image:', fileName);
+        // Clean up the file paths by removing query parameters
+        const sourceFileName = image.localUri.split('?')[0].split('/').pop();
+        if (sourceFileName) {
+          const sourcePath = `${BASE_DIR}/cached_images/${sourceFileName}`;
+          const targetPath = `${TEMP_DIR}/${sourceFileName}`;
+          console.log('Copying image from:', sourcePath, 'to:', targetPath);
+          if (await RNFS.exists(sourcePath)) {
+            await RNFS.copyFile(sourcePath, targetPath);
+            console.log('Copied image:', sourceFileName);
+          } else {
+            console.log('Source image not found:', sourcePath);
+          }
         }
       }
     }
@@ -82,6 +90,19 @@ export const exportData = async () => {
       'Files to share:',
       files.map(f => f.name),
     );
+
+    const fileDetails = await Promise.all(
+      files.map(async file => {
+        const content = await RNFS.readFile(file.path, 'utf8'); // or 'base64' for binary
+        return {
+          name: file.name,
+          path: file.path,
+          content: content,
+        };
+      }),
+    );
+
+    console.log('Files with contents:', fileDetails);
 
     // Share the directory contents
     await Share.share({
