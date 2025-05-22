@@ -164,6 +164,109 @@ function ProfileEditModal({ isOpen, onClose, userData, onSave }: {
   );
 }
 
+// Tutor Invitation Modal Component
+function TutorInviteModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const [email, setEmail] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const [emailError, setEmailError] = useState('');
+
+  const validateEmail = (email: string) => {
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return re.test(email);
+  };
+
+  const handleSubmit = async () => {
+    // Validate email
+    if (!email.trim()) {
+      setEmailError('Email is required');
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setEmailError('Please enter a valid email address');
+      return;
+    }
+
+    setEmailError('');
+    setIsSending(true);
+
+    try {
+      const response = await fetch('/api/send-tutor-invite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          senderName: localStorage.getItem('userName') || undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success('Invitation sent successfully!');
+        setEmail('');
+        onClose();
+      } else {
+        toast.error(data.error || 'Failed to send invitation');
+      }
+    } catch (error) {
+      console.error('Error sending invitation:', error);
+      toast.error('Failed to send invitation. Please try again.');
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold text-gray-800">Invite a Tutor</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+          <input
+            type="email"
+            id="email"
+            className={`w-full px-3 py-2 border ${emailError ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+            placeholder="Enter tutor's email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          {emailError && <p className="mt-1 text-sm text-red-600">{emailError}</p>}
+        </div>
+
+        <div className="mt-6 flex justify-end space-x-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            disabled={isSending}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={isSending}
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSending ? 'Sending...' : 'Send Invitation'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ProfilePage() {
   const [userData, setUserData] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -178,14 +281,16 @@ export default function ProfilePage() {
   const [pageSize, setPageSize] = useState(10);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteContentId, setDeleteContentId] = useState<string | null>(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    const checkAuth = async () => {
       try {
-        // Get token from localStorage instead of firebase directly
-        const idToken = localStorage.getItem('authToken');
-        if (!idToken) {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          // Clear any potentially corrupted auth state
+          localStorage.clear();
           router.push('/login');
           return;
         }
@@ -195,7 +300,7 @@ export default function ProfilePage() {
           `${process.env.NEXT_PUBLIC_BACKEND_HOST}/v1/users`,
           {
             headers: {
-              'Authorization': `Bearer ${idToken}`,
+              'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
           }
@@ -217,8 +322,9 @@ export default function ProfilePage() {
         setProgressPercent(progressPercentage);
         setUserData(data);
         
-        // Store user ID in localStorage for authorization checks elsewhere
+        // Store user ID and name in localStorage for authorization checks elsewhere
         localStorage.setItem('userId', data.id);
+        localStorage.setItem('userName', data.fullName);
 
         // After user data is loaded, fetch their content
         fetchUserContents(data.id);
@@ -235,7 +341,7 @@ export default function ProfilePage() {
       }
     };
 
-    fetchUserData();
+    checkAuth();
   }, [router]);
 
   const fetchUserContents = async (userId: string) => {
@@ -394,6 +500,12 @@ export default function ProfilePage() {
         userData={userData} 
         onSave={handleProfileUpdate} 
       />
+      
+      {/* Modal for inviting tutors */}
+      <TutorInviteModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+      />
 
       {/* Confirmation modal for deleting content */}
       {deleteContentId && (
@@ -432,7 +544,7 @@ export default function ProfilePage() {
           </div>
           <nav className="flex space-x-6">
             <Link href="#" className="hover:underline">Library</Link>
-            <Link href="#" className="hover:underline">Projects</Link>
+            <Link href="/projects" className="hover:underline">Projects</Link>
             <Link href="/leaderboard" className="hover:underline flex items-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1-1V8a1 1 0 011-1h2.5V6H9a1 1 0 01-1-1zm0 0V4a1 1 0 011-1h10a1 1 0 011 1v2H3z" clipRule="evenodd" />
@@ -498,12 +610,23 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Edit Profile
-            </button>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowInviteModal(true)}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                Invite Tutor
+              </button>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Edit Profile
+              </button>
+            </div>
           </div>
           
           <div className="mt-6">

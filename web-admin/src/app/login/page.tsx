@@ -20,13 +20,28 @@ export default function LoginPage() {
   
   // Check if user is already logged in
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // User is signed in
-        router.push('/profile');
-      }
-    });
-    return () => unsubscribe();
+    const token = localStorage.getItem('authToken');
+    
+    // Only check auth state if there's no token in localStorage
+    // This prevents the infinite redirect loop
+    if (!token) {
+      const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          try {
+            // Get token and store it before redirecting
+            const idToken = await user.getIdToken();
+            localStorage.setItem('authToken', idToken);
+            router.push('/profile');
+          } catch (error) {
+            console.error('Error getting token:', error);
+          }
+        }
+      });
+      return () => unsubscribe();
+    } else {
+      // If token exists, redirect to profile
+      router.push('/profile');
+    }
   }, [router]);
 
   const [email, setEmail] = useState('');

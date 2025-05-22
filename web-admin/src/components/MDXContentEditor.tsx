@@ -41,9 +41,10 @@ interface MDXContentEditorProps {
   markdown: string;
   onChange: (markdown: string) => void;
   editorRef?: React.RefObject<MDXEditorMethods | null>;
+  onImageUpload?: (image: any) => void;
 }
 
-const MDXContentEditor: React.FC<MDXContentEditorProps> = ({ markdown, onChange, editorRef }) => {
+const MDXContentEditor: React.FC<MDXContentEditorProps> = ({ markdown, onChange, editorRef, onImageUpload }) => {
   // Image upload handler
   const imageUploadHandler = useCallback(async (image: File) => {
     try {
@@ -60,6 +61,12 @@ const MDXContentEditor: React.FC<MDXContentEditorProps> = ({ markdown, onChange,
       }
 
       const data = await response.json();
+      
+      // Call the onImageUpload callback if provided
+      if (onImageUpload) {
+        onImageUpload(data);
+      }
+      
       return data.url;
     } catch (error) {
       console.error('Error uploading image:', error);
