@@ -240,9 +240,9 @@ const HomeScreen = ({navigation}: Props) => {
               />
               <Text style={styles.leaderboardText}>Leaderboard</Text>
             </TouchableOpacity>
-            {/* <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
+            <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
               <Text style={styles.shareButtonText}>Share Data</Text>
-            </TouchableOpacity> */}
+            </TouchableOpacity>
           </View>
         </View>
       </View>

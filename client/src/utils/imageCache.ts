@@ -3,15 +3,20 @@ import {Platform} from 'react-native';
 import {cacheImage, getCachedImageUri} from './storage';
 
 const getImageFileName = (url: string): string => {
-  return url.split('/').pop() || `image-${Date.now()}.jpg`;
+  // Remove query parameters and get the last part of the path
+  const cleanFileName = url.split('?')[0].split('/').pop();
+  return cleanFileName || `image-${Date.now()}.jpg`;
 };
 
 const getLocalPath = (fileName: string): string => {
+  // Remove query parameters from the filename
+  const cleanFileName = fileName.split('?')[0].split('/').pop();
+
   const directory =
     Platform.OS === 'ios'
       ? RNFS.DocumentDirectoryPath
       : RNFS.ExternalDirectoryPath;
-  return `${directory}/cached_images/${fileName}`;
+  return `${directory}/cached_images/${cleanFileName}`;
 };
 
 export const downloadAndCacheImage = async (
