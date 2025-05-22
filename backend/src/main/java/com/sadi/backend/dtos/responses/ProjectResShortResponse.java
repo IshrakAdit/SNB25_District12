@@ -10,6 +10,7 @@ public record ProjectResShortResponse(
         String authorProfilePicture,
         String bkashNumber,
         Boolean isVerified,
-        Instant createdAt
+        Instant createdAt,
+        String body
 ) {
 }

@@ -15,7 +15,7 @@ import java.util.UUID;
 @Repository
 public interface ProjectResponseRepository extends JpaRepository<ProjectResponse, UUID> {
 
-    @Query("select new com.sadi.backend.dtos.responses.ProjectResShortResponse(b.id, b.user.id, b.user.fullName, b.user.profilePicture, b.bkash, b.isVarified, b.createdAt) from ProjectResponse b where b.project.id = :projectId and (:isVerified is null or b.isVarified = :isVerified)")
+    @Query("select new com.sadi.backend.dtos.responses.ProjectResShortResponse(b.id, b.user.id, b.user.fullName, b.user.profilePicture, b.bkash, b.isVarified, b.createdAt, b.body) from ProjectResponse b where b.project.id = :projectId and (:isVerified is null or b.isVarified = :isVerified)")
     Page<ProjectResShortResponse> getProjectShortResponse(UUID projectId, Boolean isVerified, Pageable pageable);
 
     @Query("select new com.sadi.backend.dtos.responses.ProjectResFullResponse(b.id, b.body, b.user.id, b.user.fullName, b.user.profilePicture, b.bkash, b.isVarified, b.createdAt) from ProjectResponse b where b.id = :id")
