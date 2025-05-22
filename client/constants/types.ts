@@ -9,6 +9,7 @@ export type RootStackParamList = {
   ContentScreen: {course: CourseContent};
   ProjectScreen: {project: Project};
   LeaderboardScreen: undefined;
+  LessonServerScreenWrapper: undefined;
 };
 
 export type HomeStackParamList = {

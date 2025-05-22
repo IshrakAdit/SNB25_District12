@@ -1,5 +1,15 @@
 import React from 'react';
 import {View, Text, Image, TouchableOpacity, StyleSheet} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+
+type RootStackParamList = {
+  Home: undefined;
+  LessonServerScreenWrapper: undefined;
+  // ... other screens
+};
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 type Props = {
   title: string;
@@ -9,6 +19,8 @@ type Props = {
 };
 
 const TopBar = ({title, level, points, onBack}: Props) => {
+  const navigation = useNavigation<NavigationProp>();
+
   return (
     <View style={styles.container}>
       {onBack && (
@@ -31,13 +43,10 @@ const TopBar = ({title, level, points, onBack}: Props) => {
         </Text>
       </View>
 
-      <TouchableOpacity style={styles.menuButton}>
-        <Image
-          source={require('../../../assets/icons/home.png')}
-          style={styles.icon}
-          resizeMode="contain"
-        />
-        <Text style={styles.levelText}>menu</Text>
+      <TouchableOpacity 
+        style={styles.shareButton}
+        onPress={() => navigation.navigate('LessonServerScreenWrapper')}>
+        <Text style={styles.shareButtonText}>Share</Text>
       </TouchableOpacity>
     </View>
   );
@@ -79,13 +88,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
-  menuButton: {
-    padding: 5,
+  shareButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
   },
-  menuIcon: {
-    width: 24,
-    height: 24,
-    tintColor: 'white',
+  shareButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '500',
   },
   backButton: {
     position: 'absolute',

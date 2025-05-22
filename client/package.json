@@ -23,7 +23,9 @@
     "react-native-markdown-display": "^7.0.2",
     "react-native-render-html": "^6.3.4",
     "react-native-safe-area-context": "^5.4.0",
-    "react-native-screens": "^4.10.0"
+    "react-native-screens": "^4.10.0",
+    "react-native-tcp-socket": "^6.3.0",
+    "react-native-zeroconf": "^0.13.8"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
