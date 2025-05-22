@@ -1,21 +1,14 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
+import type {Project} from '../../../constants/jsonFile';
 
 type Props = {
-  course: {
-    id: string;
-    title: string;
-    description: string;
-    questionCount: number;
-    mediaType: string;
-    category: string;
-    images: string[];
-  };
+  project: Project;
   onPress: () => void;
   onDelete: () => void;
 };
 
-const CourseCard = ({course, onPress, onDelete}: Props) => {
+const ProjectCard = ({project, onPress, onDelete}: Props) => {
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.deleteButton} onPress={onDelete}>
@@ -23,25 +16,23 @@ const CourseCard = ({course, onPress, onDelete}: Props) => {
       </TouchableOpacity>
       <TouchableOpacity style={styles.cardContent} onPress={onPress}>
         <Image
-          source={{uri: course.images[0]}}
+          source={{uri: project.images[0]}}
           style={styles.image}
           resizeMode="cover"
         />
         <View style={styles.content}>
           <View style={styles.header}>
-            <Text style={styles.title}>{course.title}</Text>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{course.mediaType}</Text>
+            <Text style={styles.title}>{project.title}</Text>
+            <View style={styles.difficultyBadge}>
+              <Text style={styles.difficultyText}>{project.difficulty}</Text>
             </View>
           </View>
           <Text style={styles.description} numberOfLines={2}>
-            {course.description}
+            {project.description}
           </Text>
           <View style={styles.footer}>
-            <Text style={styles.category}>{course.category}</Text>
-            <Text style={styles.questionCount}>
-              {course.questionCount} Questions
-            </Text>
+            <Text style={styles.category}>{project.category}</Text>
+            <Text style={styles.time}>{project.estimatedTime}</Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -99,13 +90,13 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 8,
   },
-  badge: {
+  difficultyBadge: {
     backgroundColor: '#F0EBF8',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
-  badgeText: {
+  difficultyText: {
     color: '#6b41a5',
     fontSize: 12,
     fontWeight: '500',
@@ -126,10 +117,10 @@ const styles = StyleSheet.create({
     color: '#6b41a5',
     fontWeight: '500',
   },
-  questionCount: {
+  time: {
     fontSize: 12,
     color: '#757575',
   },
 });
 
-export default CourseCard;
+export default ProjectCard;

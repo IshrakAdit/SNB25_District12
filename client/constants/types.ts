@@ -1,9 +1,14 @@
 // types.ts
+import {CourseContent, Project} from './jsonFile';
+
 export type RootStackParamList = {
   Login: undefined;
   Registration: undefined;
-  ContentScreen: undefined;
-  MainApp: undefined;
+  Home: undefined;
+  Preferences: undefined;
+  ContentScreen: {course: CourseContent};
+  ProjectScreen: {project: Project};
+  LeaderboardScreen: undefined;
 };
 
 export type HomeStackParamList = {
