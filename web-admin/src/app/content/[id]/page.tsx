@@ -319,7 +319,7 @@ export default function ContentDetailPage() {
         </div>
 
         {/* Content Body */}
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-6 text-black">
           <div className="prose max-w-none">
             <ReactMarkdown>
               {parsedContent}
