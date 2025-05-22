@@ -11,6 +11,7 @@ import ContentScreen from './src/screens/components/ContentScreen';
 import ProjectScreen from './src/screens/components/ProjectScreen';
 import PreferencesScreen from './src/screens/PreferencesScreen';
 import LeaderboardScreen from './src/screens/components/LeaderboardScreen';
+import LessonServerScreenWrapper from './src/screens/LessonServerScreenWrapper';
 
 const Stack = createNativeStackNavigator();
 
@@ -21,6 +22,7 @@ function MainStack() {
       <Stack.Screen name="ContentScreen" component={ContentScreen} />
       <Stack.Screen name="ProjectScreen" component={ProjectScreen} />
       <Stack.Screen name="LeaderboardScreen" component={LeaderboardScreen} />
+      <Stack.Screen name="LessonServerScreenWrapper" component={LessonServerScreenWrapper} />
     </Stack.Navigator>
   );
 }
@@ -73,6 +75,10 @@ export default function App() {
             <Stack.Screen
               name="LeaderboardScreen"
               component={LeaderboardScreen}
+            />
+            <Stack.Screen
+              name="LessonServerScreenWrapper"
+              component={LessonServerScreenWrapper}
             />
           </Stack.Navigator>
         ) : (
