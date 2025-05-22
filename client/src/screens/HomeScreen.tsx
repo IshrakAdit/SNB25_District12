@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -7,12 +7,19 @@ import {
   ScrollView,
   StyleSheet,
   StatusBar,
+  Alert,
 } from 'react-native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
 // Components
 import TopBar from './components/TopBar';
 import ProgressBar from './components/ProgressBar';
 import CourseCard from './components/CourseCard';
+import ProjectCard from './components/ProjectCard';
+
+// Storage utilities
+import {getCourses, getProjects} from '../utils/storage';
+import {exportData} from '../utils/shareData';
 
 // import {useNavigation} from '@react-navigation/native';
 
@@ -24,76 +31,156 @@ import CourseCard from './components/CourseCard';
 //   'ContentScreen'
 // >;
 
-// Dummy data
-const userData = {
-  name: 'Omar',
-  level: 5,
-  points: 840,
-  rank: 5,
-  weeklyPoints: 120,
-  nextLevel: 6,
+// Data
+import {
+  courseContents,
+  CourseContent,
+  Project,
+  projects,
+} from '../../constants/jsonFile';
+
+// Types
+type RootStackParamList = {
+  Home: undefined;
+  ContentScreen: {course: CourseContent};
+  ProjectScreen: {project: Project};
+  LeaderboardScreen: undefined;
 };
 
-const courses = [
-  {
-    id: '1',
-    title: 'Introduction to Web Development',
-    description:
-      'Web development is the work involved in developing a website for the Internet or an intranet.',
-    questionCount: 2,
-    mediaType: 'Audio',
-    category: 'Web development',
-  },
-  {
-    id: '2',
-    title: 'Data Science Fundamentals',
-    description:
-      'Data science is an interdisciplinary field that uses scientific methods, processes, algorithms and systems to extract knowledge and insights from structured and unstructured data.',
-    questionCount: 2,
-    mediaType: 'Audio',
-    category: 'Data Science',
-  },
-  {
-    id: '3',
-    title: 'Data Science Fundamentals',
-    description:
-      'Data science is an interdisciplinary field that uses scientific methods, processes, algorithms and systems to extract knowledge and insights from structured and unstructured data.',
-    questionCount: 2,
-    mediaType: 'Audio',
-    category: 'Data Science',
-  },
-  {
-    id: '4',
-    title: 'Data Science Fundamentals',
-    description:
-      'Data science is an interdisciplinary field that uses scientific methods, processes, algorithms and systems to extract knowledge and insights from structured and unstructured data.',
-    questionCount: 2,
-    mediaType: 'Audio',
-    category: 'Data Science',
-  },
-  {
-    id: '5',
-    title: 'Data Science Fundamentals',
-    description:
-      'Data science is an interdisciplinary field that uses scientific methods, processes, algorithms and systems to extract knowledge and insights from structured and unstructured data.',
-    questionCount: 2,
-    mediaType: 'Audio',
-    category: 'Data Science',
-  },
-];
+type HomeScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'Home'
+>;
 
-const HomeScreen = ({navigation}) => {
-  const navigateToContent = course => {
-    navigation.navigate('ContentScreen', {course});
+type Props = {
+  navigation: HomeScreenNavigationProp;
+};
+
+const userData = {
+  name: 'Ishrak',
+  level: 1,
+  points: 88,
+  rank: 5,
+  nextLevel: 2,
+  weeklyPoints: 72,
+};
+
+const HomeScreen = ({navigation}: Props) => {
+  const [availableCourses, setAvailableCourses] =
+    useState<CourseContent[]>(courseContents);
+  const [availableProjects, setAvailableProjects] =
+    useState<Project[]>(projects);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      // Try to load courses and projects from local storage
+      const savedCourses = await getCourses();
+      const savedProjects = await getProjects();
+
+      // Log the data to see what we're getting
+      console.log('Loaded courses:', savedCourses);
+      console.log('Loaded projects:', savedProjects);
+
+      // If we have saved data, use it
+      if (savedCourses && savedCourses.length > 0) {
+        setAvailableCourses(savedCourses);
+        console.log('Using saved courses');
+      } else {
+        console.log('Using default courses');
+      }
+
+      if (savedProjects && savedProjects.length > 0) {
+        setAvailableProjects(savedProjects);
+        console.log('Using saved projects');
+      } else {
+        console.log('Using default projects');
+      }
+    } catch (error) {
+      console.error('Error loading data:', error);
+      Alert.alert(
+        'Notice',
+        'Using default content as saved content could not be loaded.',
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  const handleDeleteCourse = async (courseId: string) => {
+    Alert.alert(
+      'Delete Course',
+      'Are you sure you want to remove this course?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            setAvailableCourses(prev =>
+              prev.filter(course => course.id !== courseId),
+            );
+          },
+        },
+      ],
+    );
+  };
+
+  const handleDeleteProject = (projectId: string) => {
+    Alert.alert(
+      'Delete Project',
+      'Are you sure you want to remove this project?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            setAvailableProjects(prev =>
+              prev.filter(project => project.id !== projectId),
+            );
+          },
+        },
+      ],
+    );
+  };
+
+  const handleShare = async () => {
+    try {
+      console.log('Starting data export...');
+      await exportData();
+      console.log('Data exported successfully!');
+    } catch (error) {
+      console.error('Error sharing data:', error);
+      Alert.alert('Error', 'Failed to share data');
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Loading content...</Text>
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <StatusBar backgroundColor="#6b41a5" barStyle="light-content" />
 
       {/* Top Bar */}
       <TopBar
-        title="LearnHub"
+        title="BiddaShagor"
         level={userData.level}
         points={userData.points}
       />
@@ -142,40 +229,80 @@ const HomeScreen = ({navigation}) => {
               resizeMode="contain"
             /> */}
           </View>
-          <TouchableOpacity style={styles.leaderboardButton}>
-            <Image
-              source={require('../../assets/icons/star.png')}
-              style={styles.leaderboardIcon}
-              resizeMode="contain"
-            />
-            <Text style={styles.leaderboardText}>View Leaderboard</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.leaderboardButton}
+              onPress={() => navigation.navigate('LeaderboardScreen')}>
+              <Image
+                source={require('../../assets/icons/star.png')}
+                style={styles.leaderboardIcon}
+                resizeMode="contain"
+              />
+              <Text style={styles.leaderboardText}>Leaderboard</Text>
+            </TouchableOpacity>
+            {/* <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
+              <Text style={styles.shareButtonText}>Share Data</Text>
+            </TouchableOpacity> */}
+          </View>
         </View>
       </View>
 
       {/* Learning Library */}
-      <View style={styles.libraryContainer}>
-        <View style={styles.libraryHeader}>
-          <Text style={styles.libraryTitle}>Your Learning Library</Text>
+      <View style={styles.sectionContainer}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Learning Library</Text>
           <TouchableOpacity>
             <Text style={styles.viewAllText}>View all</Text>
           </TouchableOpacity>
         </View>
-
         <ScrollView
-          horizontal={true}
+          horizontal
           showsHorizontalScrollIndicator={false}
-          style={styles.coursesScrollView}>
-          {courses.map(course => (
-            <CourseCard
-              key={course.id}
-              course={course}
-              onPress={() => navigateToContent(course)}
-            />
+          contentContainerStyle={styles.scrollContent}>
+          {availableCourses.map(course => (
+            <View key={course.id} style={styles.cardWrapper}>
+              <CourseCard
+                course={{
+                  id: course.id,
+                  title: course.title,
+                  description: course.article.split('\n')[2],
+                  questionCount: course.quiz.length,
+                  mediaType: course.videos.length > 0 ? 'Video' : 'Text',
+                  category: 'Web Development',
+                  images: course.images,
+                }}
+                onPress={() => navigation.navigate('ContentScreen', {course})}
+                onDelete={() => handleDeleteCourse(course.id)}
+              />
+            </View>
           ))}
         </ScrollView>
       </View>
-    </View>
+
+      {/* Projects Section */}
+      <View style={styles.sectionContainer}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Projects</Text>
+          <TouchableOpacity>
+            <Text style={styles.viewAllText}>View all</Text>
+          </TouchableOpacity>
+        </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}>
+          {availableProjects.map(project => (
+            <View key={project.id} style={styles.cardWrapper}>
+              <ProjectCard
+                project={project}
+                onPress={() => navigation.navigate('ProjectScreen', {project})}
+                onDelete={() => handleDeleteProject(project.id)}
+              />
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    </ScrollView>
   );
 };
 
@@ -276,28 +403,55 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontSize: 14,
   },
-  libraryContainer: {
-    marginTop: 10,
-    flex: 1,
+  sectionContainer: {
+    marginVertical: 10,
+    backgroundColor: 'white',
+    borderRadius: 15,
+    padding: 15,
+    margin: 15,
   },
-  libraryHeader: {
+  sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 15,
-    marginBottom: 10,
+    marginBottom: 15,
   },
-  libraryTitle: {
-    fontSize: 18,
+  sectionTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#6b41a5',
   },
   viewAllText: {
-    color: '#2196F3',
+    color: '#6b41a5',
     fontSize: 14,
   },
-  coursesScrollView: {
-    paddingLeft: 10,
+  scrollContent: {
+    paddingHorizontal: 5,
+  },
+  cardWrapper: {
+    width: 280,
+    marginHorizontal: 5,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  shareButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+  },
+  shareButtonText: {
+    color: 'white',
+    fontWeight: '500',
+    fontSize: 14,
   },
 });
 

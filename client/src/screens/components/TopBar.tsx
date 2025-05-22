@@ -5,11 +5,17 @@ type Props = {
   title: string;
   level: number;
   points: number;
+  onBack?: () => void;
 };
 
-const TopBar = ({title, level, points}: Props) => {
+const TopBar = ({title, level, points, onBack}: Props) => {
   return (
     <View style={styles.container}>
+      {onBack && (
+        <TouchableOpacity style={styles.backButton} onPress={onBack}>
+          <Text style={styles.backButtonText}>←</Text>
+        </TouchableOpacity>
+      )}
       <View style={styles.leftSection}>
         {/* <Image
           source={require('../../../assets/icons/play.png')}
@@ -80,6 +86,17 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     tintColor: 'white',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 15,
+    bottom: 15,
+    zIndex: 1,
+  },
+  backButtonText: {
+    color: 'white',
+    fontSize: 24,
+    fontWeight: 'bold',
   },
 });
 

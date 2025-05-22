@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "912537808409",
+    "project_id": "dauntless-karma-438105-s6",
+    "storage_bucket": "dauntless-karma-438105-s6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:912537808409:android:3d73a9b3d7b46de539c488",
+        "android_client_info": {
+          "package_name": "com.client"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9Iqr6SD1fdo2AuN1-oYe23t6kNZnBdLk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
