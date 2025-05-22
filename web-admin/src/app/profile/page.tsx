@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import Link from 'next/link';
 import { v4 as uuidv4 } from 'uuid';
+import Image from 'next/image';
 
 interface UserProfile {
   id: string;
@@ -14,6 +15,30 @@ interface UserProfile {
   profilePicture?: string;
   score?: number;
   rank?: number;
+}
+
+interface Content {
+  id: string;
+  topicId: string;
+  title: string;
+  voteByUser: string | null;
+  authorId: string;
+  authorName: string;
+  authorProfilePicture: string;
+  coverPhoto: string;
+  summary: string;
+  upvoteCount: number;
+  createdAt: string;
+}
+
+interface PaginatedResponse {
+  content: Content[];
+  page: {
+    size: number;
+    number: number;
+    totalElements: number;
+    totalPages: number;
+  };
 }
 
 // Modal component for profile editing
@@ -146,6 +171,13 @@ export default function ProfilePage() {
   const [nextLevel, setNextLevel] = useState(0);
   const [progressPercent, setProgressPercent] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [contents, setContents] = useState<Content[]>([]);
+  const [contentLoading, setContentLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteContentId, setDeleteContentId] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -184,6 +216,12 @@ export default function ProfilePage() {
         setNextLevel(calculatedLevel + 1);
         setProgressPercent(progressPercentage);
         setUserData(data);
+        
+        // Store user ID in localStorage for authorization checks elsewhere
+        localStorage.setItem('userId', data.id);
+
+        // After user data is loaded, fetch their content
+        fetchUserContents(data.id);
       } catch (error) {
         console.error('Error:', error);
         toast.error('Failed to load profile');
@@ -199,6 +237,78 @@ export default function ProfilePage() {
 
     fetchUserData();
   }, [router]);
+
+  const fetchUserContents = async (userId: string) => {
+    try {
+      setContentLoading(true);
+      const idToken = localStorage.getItem('authToken');
+      if (!idToken) {
+        router.push('/login');
+        return;
+      }
+
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_HOST}/v1/contents?authorId=${userId}&page=${currentPage}&size=${pageSize}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${idToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const data = response.data as PaginatedResponse;
+      setContents(data.content);
+      setTotalPages(data.page.totalPages);
+    } catch (error) {
+      console.error('Error fetching user contents:', error);
+      toast.error('Failed to load content');
+    } finally {
+      setContentLoading(false);
+    }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 0 && newPage < totalPages && userData) {
+      setCurrentPage(newPage);
+      fetchUserContents(userData.id);
+    }
+  };
+
+  const handleDeleteContent = async (contentId: string) => {
+    try {
+      setIsDeleting(true);
+      const idToken = localStorage.getItem('authToken');
+      if (!idToken) {
+        router.push('/login');
+        return;
+      }
+
+      const response = await axios.delete(
+        `${process.env.NEXT_PUBLIC_BACKEND_HOST}/v1/contents/${contentId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${idToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (response.status === 204) {
+        toast.success('Content deleted successfully');
+        // Refresh content list
+        if (userData) {
+          fetchUserContents(userData.id);
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting content:', error);
+      toast.error('Failed to delete content');
+    } finally {
+      setIsDeleting(false);
+      setDeleteContentId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -284,6 +394,32 @@ export default function ProfilePage() {
         userData={userData} 
         onSave={handleProfileUpdate} 
       />
+
+      {/* Confirmation modal for deleting content */}
+      {deleteContentId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Delete Content</h2>
+            <p className="text-gray-700 mb-6">Are you sure you want to delete this content? This action cannot be undone.</p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setDeleteContentId(null)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => deleteContentId && handleDeleteContent(deleteContentId)}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <header className="bg-indigo-600 text-white p-4">
@@ -393,48 +529,124 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Learning Library */}
+        {/* User Content */}
         <div>
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-gray-800 text-xl font-bold">Your Learning Library</h2>
-            <Link href="#" className="text-indigo-600 text-sm hover:underline">View all</Link>
+            <h2 className="text-gray-800 text-xl font-bold">Your Content</h2>
+            <Link 
+              href="/content/create" 
+              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Create Content
+            </Link>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Course Card 1 */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="h-48 bg-gray-200 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div className="p-4">
-                <h3 className="text-gray-800 font-bold mb-2">Introduction to Web Development</h3>
-                <p className="text-sm text-gray-800 line-clamp-2">Web development is the work involved in developing a website for the Internet or an intranet. It can range from developing a simple single static page...</p>
-                <div className="flex justify-between items-center mt-4 text-xs text-gray-700">
-                  <span>2 questions</span>
-                  <span>Audio available</span>
-                </div>
-              </div>
+          {contentLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
             </div>
-
-            {/* Course Card 2 */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="h-48 bg-gray-200 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <div className="p-4">
-                <h3 className="text-gray-800 font-bold mb-2">Data Science Fundamentals</h3>
-                <p className="text-sm text-gray-800 line-clamp-2">Data science is an interdisciplinary field that uses scientific methods, processes, algorithms and systems to extract knowledge and insights from structured and unstructured data.</p>
-                <div className="flex justify-between items-center mt-4 text-xs text-gray-700">
-                  <span>2 questions</span>
-                  <span>Audio available</span>
-                </div>
-              </div>
+          ) : contents.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-md p-8 text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">No content yet</h3>
+              <p className="text-gray-600 mb-6">You haven't created any content yet. Start sharing your knowledge!</p>
+              <Link 
+                href="/content/create" 
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Create Your First Content
+              </Link>
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {contents.map((content) => (
+                  <div key={content.id} className="bg-white rounded-lg shadow-md overflow-hidden relative group">
+                    <div 
+                      className="h-48 bg-gray-200 relative cursor-pointer" 
+                      onClick={() => router.push(`/content/${content.id}`)}
+                    >
+                      {content.coverPhoto ? (
+                        <img 
+                          src={content.coverPhoto} 
+                          alt={content.title} 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                      )}
+                      
+                      {/* Delete button - only shown for content owned by the current user */}
+                      {userData && content.authorId === userData.id && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteContentId(content.id);
+                          }}
+                          className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 z-10"
+                          aria-label="Delete content"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                    <div className="p-4 cursor-pointer" onClick={() => router.push(`/content/${content.id}`)}>
+                      <h3 className="text-gray-800 font-bold mb-2 line-clamp-1">{content.title}</h3>
+                      <p className="text-sm text-gray-800 line-clamp-2">{content.summary}</p>
+                      <div className="flex justify-between items-center mt-4 text-xs text-gray-700">
+                        <span className="flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                          </svg>
+                          {content.upvoteCount}
+                        </span>
+                        <span>{new Date(content.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center mt-8">
+                  <nav className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 0}
+                      className="px-3 py-1 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Previous
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handlePageChange(i)}
+                        className={`px-3 py-1 rounded-md ${currentPage === i ? 'bg-indigo-600 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages - 1}
+                      className="px-3 py-1 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </button>
+                  </nav>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </main>
     </div>
