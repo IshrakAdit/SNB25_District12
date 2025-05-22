@@ -1,31 +1,15 @@
 meta {
-  name: GetUserInfo
+  name: GetLeaderboard
   type: http
-  seq: 1
+  seq: 3
 }
 
 get {
-  url: {{host}}/v1/users
+  url: {{host}}/v1/users/leaderboard
   body: none
   auth: bearer
 }
 
 auth:bearer {
   token: eyJhbGciOiJSUzI1NiIsImtpZCI6IjY3ZDhjZWU0ZTYwYmYwMzYxNmM1ODg4NTJiMjA5MTZkNjRjMzRmYmEiLCJ0eXAiOiJKV1QifQ.eyJzY3AiOiJBRE1JTiIsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS90ZXN0LWF1dGgtY2EyOGMiLCJhdWQiOiJ0ZXN0LWF1dGgtY2EyOGMiLCJhdXRoX3RpbWUiOjE3NDc4OTg0NDEsInVzZXJfaWQiOiI2dUdFb1VTeUlMVWxWcktob2dLZEN2bkRXYU4yIiwic3ViIjoiNnVHRW9VU3lJTFVsVnJLaG9nS2RDdm5EV2FOMiIsImlhdCI6MTc0Nzg5ODQ0MSwiZXhwIjoxNzQ3OTAyMDQxLCJlbWFpbCI6IjIwMDUwNzdAdWdyYWQuY3NlLmJ1ZXQuYWMuYmQiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsiMjAwNTA3N0B1Z3JhZC5jc2UuYnVldC5hYy5iZCJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.elBmfMc2HVbIDmNnwHb9SZJtx-0AhzERO6mJavskYf08_J6L09l9zhXgk4Rkd8eXv3V2zh5Pbz36C70OoRI8heGW-ZNTufQ0BIEQaLAGrety5jJR_l0LR8yQrEZvzLnhcC-l5vudfa1lQIYbItpaAQbX99zpJV2JUhSM9rcmXqSc2QY8UK6EBPaXrY0KH6_ZqgAtAVvp7WWnKkiIb8sbIkyiJG6RWXifRJS_4kKpj3EW58cnP99Hfwj29d7bnA40RqFRM2eHaPUALtte8-CIENcYt3px4CTOGC21Iboly5KUtW5K5QkiaBX5_nfamWmyYp-zN4fzo6mYveJcZUs1FQ
-}
-
-docs {
-  **Desc**: Get User info \
-  **Authorization**: USER \
-  **Response Bodies**:
-  ```
-  status: 200
-  
-  {
-    "id": "string",
-    "fullName": "string",
-    "email": "string",
-    "profilePicture": "string"
-  }
-  ```
 }

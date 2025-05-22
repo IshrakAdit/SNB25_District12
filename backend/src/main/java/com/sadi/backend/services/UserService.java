@@ -1,10 +1,14 @@
 package com.sadi.backend.services;
 
 import com.sadi.backend.dtos.requests.UserInfoUpdateReq;
+import com.sadi.backend.dtos.responses.LeaderboardEntry;
+import com.sadi.backend.dtos.responses.UserLeaderboardDto;
 import com.sadi.backend.entities.User;
 import com.sadi.backend.enums.Role;
 import com.sadi.backend.repositories.UserRepository;
 import com.sadi.backend.utils.SecurityUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -59,5 +63,13 @@ public class UserService {
         }
 
         return email.substring(0, email.indexOf('@'));
+    }
+
+    public Long getRank(String userId, Long score) {
+        return userRepository.getUserRank(score);
+    }
+
+    public Page<UserLeaderboardDto> getLeaderboard(Pageable pageable) {
+        return userRepository.findUsersLeaderboard(pageable);
     }
 }
