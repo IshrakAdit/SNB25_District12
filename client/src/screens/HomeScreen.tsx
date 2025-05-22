@@ -19,7 +19,7 @@ import ProjectCard from './components/ProjectCard';
 
 // Storage utilities
 import {getCourses, getProjects} from '../utils/storage';
-import {getCachedImageUri} from '../utils/imageCache';
+import {exportData} from '../utils/shareData';
 
 // import {useNavigation} from '@react-navigation/native';
 
@@ -82,17 +82,26 @@ const HomeScreen = ({navigation}: Props) => {
       const savedCourses = await getCourses();
       const savedProjects = await getProjects();
 
+      // Log the data to see what we're getting
+      console.log('Loaded courses:', savedCourses);
+      console.log('Loaded projects:', savedProjects);
+
       // If we have saved data, use it
       if (savedCourses && savedCourses.length > 0) {
         setAvailableCourses(savedCourses);
+        console.log('Using saved courses');
+      } else {
+        console.log('Using default courses');
       }
 
       if (savedProjects && savedProjects.length > 0) {
         setAvailableProjects(savedProjects);
+        console.log('Using saved projects');
+      } else {
+        console.log('Using default projects');
       }
     } catch (error) {
       console.error('Error loading data:', error);
-      // On error, we'll keep using the default data
       Alert.alert(
         'Notice',
         'Using default content as saved content could not be loaded.',
@@ -144,6 +153,17 @@ const HomeScreen = ({navigation}: Props) => {
         },
       ],
     );
+  };
+
+  const handleShare = async () => {
+    try {
+      console.log('Starting data export...');
+      await exportData();
+      console.log('Data exported successfully!');
+    } catch (error) {
+      console.error('Error sharing data:', error);
+      Alert.alert('Error', 'Failed to share data');
+    }
   };
 
   if (isLoading) {
@@ -209,16 +229,21 @@ const HomeScreen = ({navigation}: Props) => {
               resizeMode="contain"
             /> */}
           </View>
-          <TouchableOpacity
-            style={styles.leaderboardButton}
-            onPress={() => navigation.navigate('LeaderboardScreen')}>
-            <Image
-              source={require('../../assets/icons/star.png')}
-              style={styles.leaderboardIcon}
-              resizeMode="contain"
-            />
-            <Text style={styles.leaderboardText}>View Leaderboard</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.leaderboardButton}
+              onPress={() => navigation.navigate('LeaderboardScreen')}>
+              <Image
+                source={require('../../assets/icons/star.png')}
+                style={styles.leaderboardIcon}
+                resizeMode="contain"
+              />
+              <Text style={styles.leaderboardText}>Leaderboard</Text>
+            </TouchableOpacity>
+            {/* <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
+              <Text style={styles.shareButtonText}>Share Data</Text>
+            </TouchableOpacity> */}
+          </View>
         </View>
       </View>
 
@@ -411,6 +436,22 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  shareButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+  },
+  shareButtonText: {
+    color: 'white',
+    fontWeight: '500',
+    fontSize: 14,
   },
 });
 

@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {CourseContent, Project} from '../../constants/jsonFile';
 
 // Storage keys
-const STORAGE_KEYS = {
+export const STORAGE_KEYS = {
   USER_PREFERENCES: 'userPreferences',
   COURSES: 'courses',
   PROJECTS: 'projects',

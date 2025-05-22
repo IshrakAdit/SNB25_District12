@@ -6,12 +6,14 @@ import {
   Pressable,
   StyleSheet,
   Alert,
+  Platform,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import {saveCourses, saveProjects} from '../utils/storage';
 import {downloadAndCacheAllImages} from '../utils/imageCache';
 import {courseContents, projects} from '../../constants/jsonFile';
+import RNFS from 'react-native-fs';
 
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../../constants/types';
@@ -30,9 +32,16 @@ const RegistrationScreen = ({onRegister}: Props) => {
 
   const saveInitialData = async () => {
     try {
+      console.log('Starting to save initial data...');
+      console.log('Courses to save:', courseContents);
+      console.log('Projects to save:', projects);
+
       // Save courses and projects
       await saveCourses(courseContents);
+      console.log('Courses saved successfully');
+
       await saveProjects(projects);
+      console.log('Projects saved successfully');
 
       // Extract all image URLs
       const courseImages = courseContents.flatMap(
@@ -40,9 +49,30 @@ const RegistrationScreen = ({onRegister}: Props) => {
       );
       const projectImages = projects.flatMap(project => project.images || []);
       const allImages = [...courseImages, ...projectImages];
+      console.log('Images to cache:', allImages);
+
+      // Create necessary directories
+      const baseDir =
+        Platform.OS === 'ios'
+          ? RNFS.DocumentDirectoryPath
+          : RNFS.ExternalDirectoryPath;
+      const cacheDir = `${baseDir}/cached_images`;
+      const exportDir = `${baseDir}/exports`;
+
+      await RNFS.mkdir(cacheDir).catch(err =>
+        console.log('Cache dir exists or error:', err),
+      );
+      await RNFS.mkdir(exportDir).catch(err =>
+        console.log('Export dir exists or error:', err),
+      );
 
       // Download and cache all images
-      await downloadAndCacheAllImages(allImages);
+      if (allImages.length > 0) {
+        await downloadAndCacheAllImages(allImages);
+        console.log('Images cached successfully');
+      } else {
+        console.log('No images to cache');
+      }
 
       console.log('Initial data saved successfully');
     } catch (error) {
