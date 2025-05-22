@@ -180,7 +180,7 @@ const HomeScreen = ({navigation}: Props) => {
 
       {/* Top Bar */}
       <TopBar
-        title="BiddaShagor"
+        title="LearnHub"
         level={userData.level}
         points={userData.points}
       />
