@@ -1,5 +1,6 @@
 package com.sadi.backend.entities;
 
+import com.sadi.backend.dtos.BaseSortCategory;
 import com.sadi.backend.enums.ProjectType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -46,5 +47,21 @@ public class Project {
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<ProjectResponse> responses;
 
+    public Project(User user, String title, String body, ProjectType type) {
+        this.user = user;
+        this.title = title;
+        this.body = body;
+        this.type = type;
+        this.priority = 1;
+        this.createdAt = Instant.now();
+    }
 
+    @Getter
+    @RequiredArgsConstructor
+    public enum SortCategory implements BaseSortCategory {
+        CREATED_AT("createdAt"),
+        PRIORITY("priority");
+
+        private final String value;
+    }
 }
