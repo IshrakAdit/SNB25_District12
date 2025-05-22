@@ -38,6 +38,7 @@ import {
   Project,
   projects,
 } from '../../constants/jsonFile';
+import { USERNAME } from '../../constants/serverSync';
 
 // Types
 type RootStackParamList = {
@@ -57,7 +58,7 @@ type Props = {
 };
 
 const userData = {
-  name: 'Ishrak',
+  name: USERNAME,
   level: 1,
   points: 88,
   rank: 5,
@@ -241,7 +242,7 @@ const HomeScreen = ({navigation}: Props) => {
               <Text style={styles.leaderboardText}>Leaderboard</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
-              <Text style={styles.shareButtonText}>Share Data</Text>
+              <Text style={styles.shareButtonText}>Fetch Data</Text>
             </TouchableOpacity>
           </View>
         </View>

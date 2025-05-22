@@ -90,9 +90,9 @@ export function LessonServerScreen({
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>LessonSync</Text>
+        <Text style={styles.title}>Share Articles</Text>
         
-        <Text style={styles.usernameDisplay}>Welcome, {username}</Text>
+        <Text style={styles.usernameDisplay}>Logged in as, {username}</Text>
 
         <View style={styles.modeContainer}>
           <TouchableOpacity

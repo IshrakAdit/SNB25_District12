@@ -1,31 +1,7 @@
 import { Lesson } from "../src/services/LessonSyncService";
 
-// // Global username constant
-// export const USERNAME = 'imtiaz';
-
-// // Sample lessons data
-// export const initialLessons: Lesson[] = [
-//   {
-//     title: 'Learn how to code',
-//     topicId: '0',
-//     id: '0'
-//   },
-//   {
-//     title: 'Learn how to debug',
-//     topicId: '0',
-//     id: '1'
-//   },
-//   {
-//     title: 'Learn Physics',
-//     topicId: '1',
-//     id: '0'
-//   },
-// ];
-
-// export const topicIdPreferences: string[] = ['0', '1', '2'];
-
 // Global username constant
-export const USERNAME = 'irtiaz';
+export const USERNAME = 'Ishark';
 
 // Sample lessons data
 export const initialLessons: Lesson[] = [
@@ -35,15 +11,39 @@ export const initialLessons: Lesson[] = [
     id: '0'
   },
   {
-    title: 'Learn how to deploy',
+    title: 'Learn how to debug',
     topicId: '0',
-    id: '2'
+    id: '1'
   },
   {
-    title: 'Learn Chemistry',
-    topicId: '2',
+    title: 'Learn Physics',
+    topicId: '1',
     id: '0'
   },
 ];
 
-export const topicIdPreferences: string[] = ['0', '2'];
+export const topicIdPreferences: string[] = ['0', '1', '2'];
+
+// // Global username constant
+// export const USERNAME = 'Irtiaz';
+
+// // Sample lessons data
+// export const initialLessons: Lesson[] = [
+//   {
+//     title: 'Learn how to code',
+//     topicId: '0',
+//     id: '0'
+//   },
+//   {
+//     title: 'Learn how to deploy',
+//     topicId: '0',
+//     id: '2'
+//   },
+//   {
+//     title: 'Learn Chemistry',
+//     topicId: '2',
+//     id: '0'
+//   },
+// ];
+
+// export const topicIdPreferences: string[] = ['0', '2'];

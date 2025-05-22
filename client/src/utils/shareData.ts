@@ -78,7 +78,7 @@ export const exportData = async () => {
             await RNFS.copyFile(sourcePath, targetPath);
             console.log('Copied image:', sourceFileName);
           } else {
-            console.log('Source image not found:', sourcePath);
+            // console.log('Source image not found:', sourcePath);
           }
         }
       }
